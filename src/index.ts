@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { Octokit } from "@octokit/rest";
+import { Octokit } from "@octokit/core";
 import axios from "axios";
 
 const runSummaryAction = async () => {
@@ -22,7 +22,7 @@ const runSummaryAction = async () => {
   // get the pr details
 
   const { repo, owner, number } = github.context.issue;
-  const response = octokit.request(
+  const response = await octokit.request(
     "GET /repos/{owner}/{repo}/pulls/{pull_number}",
     {
       owner,
