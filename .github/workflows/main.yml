@@ -1,4 +1,4 @@
-name: Update README with QOTD
+name: PR summary
 on:
   workflow_dispatch: # triggers manually
   schedule:
@@ -16,5 +16,7 @@ jobs:
         node-version: '16.x'
     - name: Install node dependencies
       run: npm install
+    - name: Build
+      run: npm build
     - name: Run PR summary action
       uses: ./ # Uses an action in the root directory
