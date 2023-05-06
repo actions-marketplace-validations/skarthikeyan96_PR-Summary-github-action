@@ -3,8 +3,6 @@ import * as github from "@actions/github";
 import { Octokit } from "@octokit/core";
 import { OpenAIApi, Configuration } from "openai";
 
-import axios from "axios";
-
 const runSummaryAction = async () => {
   if (github.context.eventName !== "pull_request") {
     // The core module on the other hand let's you get
