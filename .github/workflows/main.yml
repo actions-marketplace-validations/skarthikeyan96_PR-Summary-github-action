@@ -1,8 +1,9 @@
 name: PR summary
 on:
-  workflow_dispatch: # triggers manually
-  schedule:
-  - cron: "0 0 * * *" # triggers every midnight
+  pull_request
+  # workflow_dispatch: # triggers manually
+  # # schedule:
+  # # - cron: "0 0 * * *" # triggers every midnight
 
 jobs:
   build:
