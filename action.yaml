@@ -2,9 +2,12 @@ name: PR summary
 author: Karthikeyan
 description: Generating explanation of PR which has been opened by the developer.
 inputs:
-  open_ai_key:
+  OPENAI_API_KEY:
     description: Open AI API key
-    required: false
+    required: true
+  GITHUB_TOKEN:
+    description: Github Token
+    required: true
 runs:
   using: node16
   main: dist/index.js
