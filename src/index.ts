@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { Octokit } from "@octokit/core";
-import {OpenAIApi, Configuration} from 'openai';
+import { OpenAIApi, Configuration } from "openai";
 
 import axios from "axios";
 
@@ -27,43 +27,52 @@ const runSummaryAction = async () => {
 
   const openai = new OpenAIApi(configuration);
 
-
   // get the pr details
 
   const { repo, owner, number } = github.context.issue;
   try {
-
     const response = await octokit.request(
-        "GET /repos/{owner}/{repo}/pulls/{pull_number}",
-        {
-          owner,
-          repo,
-          pull_number: number,
-          headers: {
-            "X-GitHub-Api-Version": "2022-11-28",
-          },
-        }
-      );
+      "GET /repos/{owner}/{repo}/pulls/{pull_number}",
+      {
+        owner,
+        repo,
+        pull_number: number,
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      }
+    );
 
-      const {title, body} = response.data;
-      
-      const summaryResponse = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: `Pull Request Summary: Title: ${title} Description: ${body || ""} `,
-        temperature: 0.7,
-        max_tokens: 100,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-      });
+    const { title, body, patch_url } = response.data;
 
-      console.log(summaryResponse.data.choices[0].text)
+    const summaryResponse = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: `Pull Request Summary: Title: ${title} Description: ${
+        body || ""
+      } Diff: ${patch_url}`,
+      temperature: 0.7,
+      max_tokens: 100,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+    });
 
+    await octokit.request(
+      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+      {
+        owner,
+        repo,
+        issue_number: number,
+        body: summaryResponse.data.choices[0].text || "",
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      }
+    );
   } catch (error) {
-    console.log(error)
-    core.setFailed("something went wrong")
+    console.log(error);
+    core.setFailed("something went wrong");
   }
-  
 };
 
 runSummaryAction();
