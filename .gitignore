@@ -2,7 +2,7 @@
 node_modules/
 
 # Ignore TypeScript build output
-dist/
+# dist/
 
 # Ignore environment-specific files
 .env
