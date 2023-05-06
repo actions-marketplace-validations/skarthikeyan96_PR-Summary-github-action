@@ -1,6 +1,8 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { Octokit } from "@octokit/core";
+import {OpenAIApi, Configuration} from 'openai';
+
 import axios from "axios";
 
 const runSummaryAction = async () => {
@@ -19,21 +21,49 @@ const runSummaryAction = async () => {
     auth: github_token,
   });
 
+  const configuration = new Configuration({
+    apiKey: openai_key,
+  });
+
+  const openai = new OpenAIApi(configuration);
+
+
   // get the pr details
 
   const { repo, owner, number } = github.context.issue;
-  const response = await octokit.request(
-    "GET /repos/{owner}/{repo}/pulls/{pull_number}",
-    {
-      owner,
-      repo,
-      pull_number: number,
-      headers: {
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    }
-  );
-  console.log(response);
+  try {
+
+    const response = await octokit.request(
+        "GET /repos/{owner}/{repo}/pulls/{pull_number}",
+        {
+          owner,
+          repo,
+          pull_number: number,
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        }
+      );
+
+      const {title, body} = response.data;
+      
+      const summaryResponse = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: `Pull Request Summary: Title: ${title} Description: ${body || ""} `,
+        temperature: 0.7,
+        max_tokens: 100,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      });
+
+      console.log(summaryResponse.data.choices[0].text)
+
+  } catch (error) {
+    console.log(error)
+    core.setFailed("something went wrong")
+  }
+  
 };
 
 runSummaryAction();
